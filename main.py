@@ -11,7 +11,7 @@ import picamera.array
 from Adafruit_MotorHAT import Adafruit_MotorHAT
 
 SERVER_PORT = 7777
-CAMERA_RES = (640, 480)
+CAMERA_RES = (1640, 1232)
 
 # Create a default object, no changes to I2C address or frequency
 motorhat = Adafruit_MotorHAT(addr=0x60)
@@ -21,7 +21,7 @@ rightMotor = motorhat.getMotor(2)
 # Create camera object
 camera = picamera.PiCamera()
 camera.resolution = CAMERA_RES
-camera.framerate = 10
+camera.framerate = 30
 
 # Numpy array of shape (rows, columns, colors)
 imgArray = picamera.array.PiRGBArray(camera)
@@ -64,9 +64,9 @@ def getImage():
     img = imgArray.array
 
     # Drop some rows and columns to downsize the image
-    # Full image size is 1.2MB, which can be slow to stream over wifi
-    img = img[0:480:4, 0:640:4]
-    
+    img = img[0:1640:20, 0:1232:20]
+    assert img.shape == (3, 80, 60), img.shape
+
     img = np.ascontiguousarray(img, dtype=np.uint8)
 
     return img
@@ -104,8 +104,10 @@ socket.bind(serverAddr)
 thread = threading.Thread(target=camWorker)
 thread.start()
 
-def sendArray(socket, array):
-    """Send a numpy array with metadata over zmq"""
+def send_array(socket, array):
+    """
+    Send a numpy array with metadata over zmq
+    """
     md = dict(
         dtype=str(array.dtype),
         shape=array.shape,
@@ -130,17 +132,22 @@ def poll_socket(socket, timetick = 10):
 
 def handle_message(msg):
     if msg['command'] == 'action':
-        print('received motor velocities')
-        print(msg['values'])
-        left, right = tuple(msg['values'])
-        setMotors(left, right)
+        print('received action')
+
+        action = msg['action']
+        print(action)
+
+
+        #setMotors(left, right)
+
+
     elif msg['command'] == 'reset':
         print('got reset command')
     else:
         assert False, "unknown command"
 
     print('sending image')
-    sendArray(socket, lastImg)
+    send_array(socket, lastImg)
     print('sent image')
 
 for message in poll_socket(socket):
