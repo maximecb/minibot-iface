@@ -10,7 +10,7 @@ Dependencies:
 
 Installing the dependencies:
 ```
-pip3 install numpy pyzmq
+pip3 install numpy zmq
 
 # Picamera (may already be installed on raspbian distro)
 sudo apt-get update
