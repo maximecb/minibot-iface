@@ -148,13 +148,24 @@ def handle_message(msg):
             time.sleep(0.2)
             set_motors(0, 0)
 
+        if action == 'move_back':
+            set_motors(-0.4, -0.4)
+            time.sleep(0.2)
+            set_motors(0, 0)
 
+        if action == 'turn_left':
+            set_motors(-0.4, 0.4)
+            time.sleep(0.2)
+            set_motors(0, 0)
 
-
-
+        if action == 'turn_right':
+            set_motors(0.4, -0.4)
+            time.sleep(0.2)
+            set_motors(0, 0)
 
     elif msg['command'] == 'reset':
         print('got reset command')
+        set_motors(0, 0)
     else:
         assert False, "unknown command"
 
