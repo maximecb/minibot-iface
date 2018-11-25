@@ -1,5 +1,5 @@
 # minibot-iface
-Remote control interface for duckiebots (Duckietown robots using a Raspberri Pi)
+Remote control interface for the MiniWorld robot (Raspberri Pi 3 B+, camera module V2)
 
 Dependencies:
 - Python 2
