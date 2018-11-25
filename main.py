@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import threading
 import signal
@@ -119,6 +119,7 @@ def send_array(socket, array):
 def poll_socket(socket, timetick = 10):
     poller = zmq.Poller()
     poller.register(socket, zmq.POLLIN)
+
     # wait up to 10msec
     try:
         print("poller ready")
