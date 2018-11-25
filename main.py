@@ -66,7 +66,7 @@ def get_image():
     # Drop some rows and columns to downsize the image
     img = img[0:1232:20, 0:1640:20]
     img = img[0:60, 0:80]
-    assert img.shape == (3, 80, 60), img.shape
+    assert img.shape == (60, 80, 3), img.shape
 
     img = np.ascontiguousarray(img, dtype=np.uint8)
 
