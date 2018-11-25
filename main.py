@@ -24,9 +24,9 @@ camera.resolution = CAMERA_RES
 camera.framerate = 30
 
 # Numpy array of shape (rows, columns, colors)
-imgArray = picamera.array.PiRGBArray(camera)
+img_array = picamera.array.PiRGBArray(camera)
 
-frameItr = camera.capture_continuous(imgArray, format='bgr', use_video_port=True)
+frame_itr = camera.capture_continuous(img_array, format='bgr', use_video_port=True)
 
 def set_motors(lSpeed, rSpeed):
     lSpeed = max(-255, min(255, int(lSpeed * 255)))
@@ -47,24 +47,25 @@ def set_motors(lSpeed, rSpeed):
         rightMotor.setSpeed(-rSpeed)
 
 exiting = False
-lastImg = None
+last_img = None
 
 def camWorker():
     global exiting
-    global lastImg
+    global last_img
     while not exiting:
-        lastImg = get_image()
+        last_img = get_image()
     print('camera thread exiting')
 
 def get_image():
     # Clear the image array between captures
-    imgArray.truncate(0)
-    next(frameItr)
+    img_array.truncate(0)
+    next(frame_itr)
 
-    img = imgArray.array
+    img = img_array.array
 
     # Drop some rows and columns to downsize the image
-    img = img[0:1640:20, 0:1232:20]
+    img = img[0:1232:20, 0:1640:20]
+    img = img[0:60, 0:80]
     assert img.shape == (3, 80, 60), img.shape
 
     img = np.ascontiguousarray(img, dtype=np.uint8)
@@ -148,7 +149,7 @@ def handle_message(msg):
         assert False, "unknown command"
 
     print('sending image')
-    send_array(socket, lastImg)
+    send_array(socket, last_img)
     print('sent image')
 
 for message in poll_socket(socket):
