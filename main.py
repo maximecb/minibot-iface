@@ -14,7 +14,7 @@ SERVER_PORT = 7777
 CAMERA_RES = (1640, 1232)
 
 # Create a default object, no changes to I2C address or frequency
-motorhat = Adafruit_MotorHAT(addr=0x60)
+motorhat = Adafruit_MotorHAT(addr=0x6f)
 leftMotor = motorhat.getMotor(1)
 rightMotor = motorhat.getMotor(2)
 
@@ -28,7 +28,7 @@ imgArray = picamera.array.PiRGBArray(camera)
 
 frameItr = camera.capture_continuous(imgArray, format='bgr', use_video_port=True)
 
-def setMotors(lSpeed, rSpeed):
+def set_motors(lSpeed, rSpeed):
     lSpeed = max(-255, min(255, int(lSpeed * 255)))
     rSpeed = max(-255, min(255, int(rSpeed * 255)))
 
@@ -53,10 +53,10 @@ def camWorker():
     global exiting
     global lastImg
     while not exiting:
-        lastImg = getImage()
+        lastImg = get_image()
     print('camera thread exiting')
 
-def getImage():
+def get_image():
     # Clear the image array between captures
     imgArray.truncate(0)
     next(frameItr)
@@ -139,7 +139,7 @@ def handle_message(msg):
         print(action)
 
 
-        #setMotors(left, right)
+        #set_motors(left, right)
 
 
     elif msg['command'] == 'reset':
