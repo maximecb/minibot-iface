@@ -15,8 +15,8 @@ CAMERA_RES = (1640, 1232)
 
 # Create a default object, no changes to I2C address or frequency
 motorhat = Adafruit_MotorHAT(addr=0x6f)
-leftMotor = motorhat.getMotor(1)
-rightMotor = motorhat.getMotor(2)
+left_motor = motorhat.getMotor(1)
+right_motor = motorhat.getMotor(2)
 
 # Create camera object
 camera = picamera.PiCamera()
@@ -33,23 +33,27 @@ def set_motors(lSpeed, rSpeed):
     rSpeed = max(-255, min(255, int(rSpeed * 255)))
 
     if lSpeed > 0:
-        leftMotor.run(Adafruit_MotorHAT.FORWARD)
-        leftMotor.setSpeed(lSpeed)
+        left_motor.run(Adafruit_MotorHAT.FORWARD)
+        left_motor.setSpeed(lSpeed)
+    elif lSpeed < 0:
+        left_motor.run(Adafruit_MotorHAT.BACKWARD)
+        left_motor.setSpeed(-lSpeed)
     else:
-        leftMotor.run(Adafruit_MotorHAT.BACKWARD)
-        leftMotor.setSpeed(-lSpeed)
+        left_motor.run(Adafruit_MotorHAT.RELEASE)
 
     if rSpeed > 0:
-        rightMotor.run(Adafruit_MotorHAT.FORWARD)
-        rightMotor.setSpeed(rSpeed)
+        right_motor.run(Adafruit_MotorHAT.FORWARD)
+        right_motor.setSpeed(rSpeed)
+    elif rSpeed < 0:
+        right_motor.run(Adafruit_MotorHAT.BACKWARD)
+        right_motor.setSpeed(-rSpeed)
     else:
-        rightMotor.run(Adafruit_MotorHAT.BACKWARD)
-        rightMotor.setSpeed(-rSpeed)
+        right_motor.run(Adafruit_MotorHAT.RELEASE)
 
 exiting = False
 last_img = None
 
-def camWorker():
+def cam_worker():
     global exiting
     global last_img
     while not exiting:
@@ -81,8 +85,8 @@ def signal_handler(signal, frame):
     thread.join()
 
     # Stop the motors
-    leftMotor.run(Adafruit_MotorHAT.RELEASE)
-    rightMotor.run(Adafruit_MotorHAT.RELEASE)
+    left_motor.run(Adafruit_MotorHAT.RELEASE)
+    right_motor.run(Adafruit_MotorHAT.RELEASE)
 
     # Close the camera
     camera.close()
@@ -102,7 +106,7 @@ socket = context.socket(zmq.PAIR)
 socket.bind(serverAddr)
 
 # Start a new thread for the camera
-thread = threading.Thread(target=camWorker)
+thread = threading.Thread(target=cam_worker)
 thread.start()
 
 def send_array(socket, array):
@@ -140,7 +144,7 @@ def handle_message(msg):
         print(action)
 
         if action == 'move_forward':
-            set_motors(60, 60)
+            set_motors(0.4, 0.4)
             time.sleep(0.2)
             set_motors(0, 0)
 
