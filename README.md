@@ -14,10 +14,10 @@ pip3 install numpy pyzmq
 
 # Picamera (may already be installed on raspbian distro)
 sudo apt-get update
-sudo apt-get install python-picamera python3-picamera
+sudo apt-get install python3-picamera
 
 # Adafruit motor controller library
 git clone https://github.com/adafruit/Adafruit-Motor-HAT-Python-Library.git
 cd Adafruit-Motor-HAT-Python-Library
-pip install --trusted-host pypi.python.org --user -e .
+pip3 install --trusted-host pypi.python.org --user -e .
 ```
