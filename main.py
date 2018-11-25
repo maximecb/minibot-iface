@@ -139,8 +139,14 @@ def handle_message(msg):
         action = msg['action']
         print(action)
 
+        if action == 'move_forward':
+            set_motors(60, 60)
+            time.sleep(0.2)
+            set_motors(0, 0)
 
-        #set_motors(left, right)
+
+
+
 
 
     elif msg['command'] == 'reset':
