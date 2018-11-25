@@ -1,4 +1,4 @@
-# duck-remote-iface
+# minibot-iface
 Remote control interface for duckiebots (Duckietown robots using a Raspberri Pi)
 
 Dependencies:
