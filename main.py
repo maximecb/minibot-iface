@@ -169,6 +169,9 @@ def handle_message(msg):
     else:
         assert False, "unknown command"
 
+    # TODO: code to check for new camera image instead?
+    time.sleep(0.05)
+
     print('sending image')
     send_array(socket, last_img)
     print('sent image')
