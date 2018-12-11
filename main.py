@@ -21,12 +21,15 @@ right_motor = motorhat.getMotor(2)
 # Create camera object
 camera = picamera.PiCamera()
 camera.resolution = CAMERA_RES
-camera.framerate = 30
+camera.framerate = 40
+camera.iso = 200
+time.sleep(2)
+g = camera.awb_gains
+camera.awb_mode = 'off'
+camera.awb_gains = g
 
 # Numpy array of shape (rows, columns, colors)
 img_array = picamera.array.PiRGBArray(camera)
-
-frame_itr = camera.capture_continuous(img_array, format='bgr', use_video_port=True)
 
 def set_motors(lSpeed, rSpeed):
     lSpeed = max(-255, min(255, int(lSpeed * 255)))
@@ -50,27 +53,23 @@ def set_motors(lSpeed, rSpeed):
     else:
         right_motor.run(Adafruit_MotorHAT.RELEASE)
 
-exiting = False
-last_img = None
-
-def cam_worker():
-    global exiting
-    global last_img
-    while not exiting:
-        last_img = get_image()
-    print('camera thread exiting')
-
 def get_image():
     # Clear the image array between captures
     img_array.truncate(0)
-    next(frame_itr)
 
+    camera.capture(img_array, format='rgb')
     img = img_array.array
 
     # Drop some rows and columns to downsize the image
     img = img[0:1232:20, 0:1640:20]
     img = img[0:60, 0:80]
     assert img.shape == (60, 80, 3), img.shape
+
+    # Swap BGR to RGB becausee picamera doesn't handle this correctly
+    r = img[:, :, 2]
+    g = img[:, :, 1]
+    b = img[:, :, 0]
+    img = np.stack([r, g, b], axis=2)
 
     img = np.ascontiguousarray(img, dtype=np.uint8)
 
@@ -80,9 +79,6 @@ def signal_handler(signal, frame):
     global exiting
 
     print("exiting")
-
-    exiting = True
-    thread.join()
 
     # Stop the motors
     left_motor.run(Adafruit_MotorHAT.RELEASE)
@@ -104,10 +100,6 @@ print('Starting server at %s' % serverAddr)
 context = zmq.Context()
 socket = context.socket(zmq.PAIR)
 socket.bind(serverAddr)
-
-# Start a new thread for the camera
-thread = threading.Thread(target=cam_worker)
-thread.start()
 
 def send_array(socket, array):
     """
@@ -169,11 +161,10 @@ def handle_message(msg):
     else:
         assert False, "unknown command"
 
-    # TODO: code to check for new camera image instead?
-    time.sleep(0.05)
-
     print('sending image')
-    send_array(socket, last_img)
+
+    image = get_image()
+    send_array(socket, image)
     print('sent image')
 
 for message in poll_socket(socket):
