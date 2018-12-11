@@ -155,6 +155,9 @@ def handle_message(msg):
             time.sleep(0.2)
             set_motors(0, 0)
 
+        if action == 'done':
+            set_motors(0, 0)
+
     elif msg['command'] == 'reset':
         print('got reset command')
         set_motors(0, 0)
