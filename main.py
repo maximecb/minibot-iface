@@ -9,6 +9,7 @@ import numpy as np
 import picamera
 import picamera.array
 from Adafruit_MotorHAT import Adafruit_MotorHAT
+from scipy.misc import imresize
 
 SERVER_PORT = 7777
 CAMERA_RES = (1640, 1232)
@@ -18,7 +19,8 @@ motorhat = Adafruit_MotorHAT(addr=0x6f)
 left_motor = motorhat.getMotor(1)
 right_motor = motorhat.getMotor(2)
 
-# Create camera object
+# Initialize the camera and set parameters
+print("Initializing camera")
 camera = picamera.PiCamera()
 camera.resolution = CAMERA_RES
 camera.framerate = 40
@@ -27,6 +29,7 @@ time.sleep(2)
 g = camera.awb_gains
 camera.awb_mode = 'off'
 camera.awb_gains = g
+camera.shutter_speed = 30*1000
 
 # Numpy array of shape (rows, columns, colors)
 img_array = picamera.array.PiRGBArray(camera)
@@ -60,25 +63,26 @@ def get_image():
     camera.capture(img_array, format='rgb')
     img = img_array.array
 
-    # Drop some rows and columns to downsize the image
-    img = img[0:1232:20, 0:1640:20]
-    img = img[0:60, 0:80]
-    assert img.shape == (60, 80, 3), img.shape
+    print('Resizing image')
 
-    # Swap BGR to RGB becausee picamera doesn't handle this correctly
-    r = img[:, :, 2]
-    g = img[:, :, 1]
-    b = img[:, :, 0]
-    img = np.stack([r, g, b], axis=2)
+    # Drop some rows and columns to speed up resizing
+    img = img[::3, ::3]
+
+    # Resize to reduce the noise in the final image
+    # We resize on the raspi to minimize bandwidth required
+    img = imresize(img, (60, 80, 3), interp='cubic')
+
+    # Drop some rows and columns to downsize the image
+    #img = img[0:1232:20, 0:1640:20]
+    #img = img[0:60, 0:80]
+    #assert img.shape == (60, 80, 3), img.shape
 
     img = np.ascontiguousarray(img, dtype=np.uint8)
 
     return img
 
 def signal_handler(signal, frame):
-    global exiting
-
-    print("exiting")
+    print("Shutting down")
 
     # Stop the motors
     left_motor.run(Adafruit_MotorHAT.RELEASE)
@@ -88,7 +92,6 @@ def signal_handler(signal, frame):
     camera.close()
 
     time.sleep(0.25)
-
     sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
@@ -111,7 +114,7 @@ def send_array(socket, array):
     )
     # SNDMORE flag specifies this is a multi-part message
     socket.send_json(md, flags=zmq.SNDMORE)
-    return socket.send(array, flags=0, copy=True, track=False)
+    return socket.send(array, copy=True, track=False, flags=0)
 
 def poll_socket(socket, timetick = 10):
     poller = zmq.Poller()
@@ -119,7 +122,7 @@ def poll_socket(socket, timetick = 10):
 
     # wait up to 10msec
     try:
-        print("poller ready")
+        print("Poller ready")
         while True:
             obj = dict(poller.poll(timetick))
             if socket in obj and obj[socket] == zmq.POLLIN:
@@ -129,7 +132,11 @@ def poll_socket(socket, timetick = 10):
         quit()
 
 def handle_message(msg):
-    if msg['command'] == 'action':
+    if msg['command'] == 'reset':
+        print('got reset command')
+        set_motors(0, 0)
+
+    elif msg['command'] == 'action':
         print('received action')
 
         action = msg['action']
@@ -158,9 +165,6 @@ def handle_message(msg):
         if action == 'done':
             set_motors(0, 0)
 
-    elif msg['command'] == 'reset':
-        print('got reset command')
-        set_motors(0, 0)
     else:
         assert False, "unknown command"
 
