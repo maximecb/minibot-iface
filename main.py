@@ -29,7 +29,7 @@ time.sleep(2)
 g = camera.awb_gains
 camera.awb_mode = 'off'
 camera.awb_gains = g
-camera.shutter_speed = 30*1000
+camera.shutter_speed = 40*1000
 
 # Numpy array of shape (rows, columns, colors)
 img_array = picamera.array.PiRGBArray(camera)
