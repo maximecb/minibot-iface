@@ -16,10 +16,14 @@ Installing the dependencies:
 sudo apt-get update
 sudo apt-get install -y python3-pip python3-picamera libatlas-base-dev
 
-pip3 install numpy zmq scipy
+pip3 install numpy zmq scipy==1.1.0
 
 # Adafruit motor controller library
 git clone https://github.com/adafruit/Adafruit-Motor-HAT-Python-Library.git
 cd Adafruit-Motor-HAT-Python-Library
 pip3 install --trusted-host pypi.python.org --user -e .
 ```
+
+# Troubleshooting
+
+Note that some Python packages can take forever to build and install with pip. It's worth consulting the list of available precompiled wheels on [piwheels](https://www.piwheels.hostedpi.com/packages.html), and specifying to install a package version that you know has a precompiled wheel.
