@@ -14,7 +14,7 @@ Installing the dependencies:
 ```
 # Picamera (may already be installed on raspbian distro)
 sudo apt-get update
-sudo apt-get install python3-pip python3-picamera
+sudo apt-get install -y python3-pip python3-picamera
 
 pip3 install numpy zmq scipy
 
