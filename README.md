@@ -14,7 +14,7 @@ Installing the dependencies:
 ```
 # Picamera (may already be installed on raspbian distro)
 sudo apt-get update
-sudo apt-get install -y python3-pip python3-picamera python3-smbus i2c-tools libatlas-base-dev
+sudo apt-get install -y python3-pip python3-picamera python3-rpi.gpio python3-smbus i2c-tools libatlas-base-dev
 
 pip3 install numpy zmq scipy==1.1.0
 
