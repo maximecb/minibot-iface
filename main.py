@@ -14,6 +14,10 @@ from scipy.misc import imresize
 SERVER_PORT = 7777
 CAMERA_RES = (1640, 1232)
 
+# Requested observation (image) size
+obs_width = 80
+obs_height = 60
+
 # Create a default object, no changes to I2C address or frequency
 motorhat = Adafruit_MotorHAT(addr=0x6f)
 left_motor = motorhat.getMotor(1)
@@ -63,14 +67,14 @@ def get_image():
     camera.capture(img_array, format='rgb')
     img = img_array.array
 
-    print('Resizing image')
+    print('Resizing image to {}x{}'.format(obs_width, obs_height))
 
     # Drop some rows and columns to speed up resizing
-    img = img[::3, ::3]
+    img = img[::4, ::4]
 
     # Resize to reduce the noise in the final image
     # We resize on the raspi to minimize bandwidth required
-    img = imresize(img, (60, 80, 3), interp='cubic')
+    img = imresize(img, (obs_height, obs_width, 3), interp='cubic')
 
     # Drop some rows and columns to downsize the image
     #img = img[0:1232:20, 0:1640:20]
@@ -132,8 +136,12 @@ def poll_socket(socket, timetick = 10):
         quit()
 
 def handle_message(msg):
+    global obs_width, obs_height
+
     if msg['command'] == 'reset':
         print('got reset command')
+        obs_width = msg['obs_width']
+        obs_height = msg['obs_height']
         set_motors(0, 0)
         time.sleep(0.5)
 
