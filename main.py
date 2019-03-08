@@ -29,7 +29,7 @@ time.sleep(2)
 g = camera.awb_gains
 camera.awb_mode = 'off'
 camera.awb_gains = g
-camera.shutter_speed = 40*1000
+camera.shutter_speed = 10*1000
 
 # Numpy array of shape (rows, columns, colors)
 img_array = picamera.array.PiRGBArray(camera)
@@ -135,6 +135,7 @@ def handle_message(msg):
     if msg['command'] == 'reset':
         print('got reset command')
         set_motors(0, 0)
+        time.sleep(0.5)
 
     elif msg['command'] == 'action':
         print('received action')
@@ -165,11 +166,13 @@ def handle_message(msg):
         if action == 'done':
             set_motors(0, 0)
 
+        if action != 'done':
+            time.sleep(0.5)
+
     else:
         assert False, "unknown command"
 
     print('sending image')
-
     image = get_image()
     send_array(socket, image)
     print('sent image')
