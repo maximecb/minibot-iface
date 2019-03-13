@@ -112,13 +112,16 @@ def send_array(socket, array):
     """
     Send a numpy array with metadata over zmq
     """
+    
     md = dict(
         dtype=str(array.dtype),
         shape=array.shape,
     )
+
     # SNDMORE flag specifies this is a multi-part message
-    socket.send_json(md, flags=zmq.SNDMORE)
-    return socket.send(array, copy=True, track=False, flags=0)
+    # NOBLOCK prevents getting blocked if the client disconnects
+    socket.send_json(md, flags=zmq.SNDMORE|zmq.NOBLOCK)
+    return socket.send(array, copy=True, track=False, flags=zmq.NOBLOCK)
 
 def poll_socket(socket, timetick = 10):
     poller = zmq.Poller()
@@ -182,8 +185,11 @@ def handle_message(msg):
 
     print('sending image')
     image = get_image()
-    send_array(socket, image)
-    print('sent image')
+    try:
+        send_array(socket, image)
+        print('sent image')
+    except:
+        print('failed to send image')
 
 for message in poll_socket(socket):
     handle_message(message)
