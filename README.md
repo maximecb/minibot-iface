@@ -1,6 +1,6 @@
 # minibot-iface
 
-Remote control interface for the MiniWorld robot. The robot uses a Raspberri Pi 3 B+, the camera module V2, an [Adafruit motor hat](https://www.adafruit.com/product/2348) and two differential drive motors.
+Remote control interface for the MiniWorld robot. The robot uses a Raspberry Pi 3 B+, the camera module V2, an [Adafruit motor hat](https://www.adafruit.com/product/2348) and two differential drive motors.
 
 Dependencies:
 - Python 3
